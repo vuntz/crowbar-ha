@@ -39,10 +39,10 @@ if node[:corosync][:transport] == "udpu" && (node[:corosync][:members].nil? || n
 end
 
 template "/etc/corosync/corosync.conf" do
-  if node[:platform_family] == "suse" && node[:platform_version].to_f >= 12.0
-    source "corosync.conf.v2.erb"
-  else
+  if node[:platform_family] == "suse" && node[:platform_version].to_f < 12.0
     source "corosync.conf.erb"
+  else
+    source "corosync.conf.v2.erb"
   end
   owner "root"
   group "root"
