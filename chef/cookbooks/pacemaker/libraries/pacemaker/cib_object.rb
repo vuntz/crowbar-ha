@@ -20,10 +20,24 @@ module Pacemaker
         cmd.run_command
         begin
           cmd.error!
-          cmd.stdout
         rescue
           nil
         end
+
+        lines_for_def = []
+        cmd.stdout.lines.each do |line|
+          if lines_for_def.empty?
+            # look for the beginning of a non-node definition
+            next unless line =~ /\A(\w+)\s/
+            next if $1 == "node"
+          else
+            # stop parsing if we reach the end of our definition
+            break if line !~ /\A\s/
+          end
+          lines_for_def.push(line)
+        end
+
+        lines_for_def.join("")
       end
 
       def exists?(name)
