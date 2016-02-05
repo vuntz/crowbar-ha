@@ -38,3 +38,16 @@ execute "crm initial configuration" do
   subscribes :run, resources(template: crm_conf), :immediately
   action :nothing
 end
+
+# The output of "cibadmin -Q -n" looks like:
+# <cib epoch="41" num_updates="9" admin_epoch="0" validate-with="pacemaker-1.2" ...>
+cib_cmd = "cibadmin -Q -n | sed -e 's/.*validate-with=\"\\([^\"]*\\)\".*$/\\1/'"
+
+execute "upgrade CIB syntax version" do
+  user "root"
+  command "crm configure upgrade force"
+  not_if do
+    Mixlib::ShellOut.new(cib_cmd).run_command.stdout.chomp.split("-").last >
+      node[:pacemaker][:cib_syntax_version]
+  end
+end
